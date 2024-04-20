@@ -2,16 +2,24 @@ import pygame as pg
 import sys
 import math
 
+
+
 from pygame.locals import *
 
 clock = pg.time.Clock()
 
-window_width = 1500
+window_width = 1300
 window_height = 832
 pg.init()
-window = pg.display.set_mode((window_width, window_height), 0, 32)
+window = pg.display.set_mode((window_width, window_height), 0, 32, display=0)
 pg.display.set_caption('541 Pixel Art')
 spriteMap = pg.Surface((832, 832))
+
+
+#font
+pg.font.init()
+main_font = pg.font.SysFont('Bell MT', 24)
+
 
 class node:
     data: list[pg.Color]
@@ -68,7 +76,39 @@ class linkedList:
             temp = temp.next
             i += 1
         return temp.data.copy()
+    
+    
 
+
+class Slider:
+    def __init__(self, pos:tuple, size: tuple, min, max):
+        #pos is the center of the slider
+        self.pos = pos
+        self.size = size
+        self.slider_left = self.pos[0] - size[0]/2
+        self.slider_right = self.pos[0] + size[0]/2
+        self.slider_top = self.pos[1] + size[1]/2
+
+        self.min = min
+        self.max = max
+
+        self.container_rect = pg.Rect(self.slider_left, self.slider_top, self.size[0], self.size[1])
+        self.button_rect = pg.Rect(self.slider_left - 6, self.slider_top - 3, 12, self.size[1] + 6)
+
+    def draw(self, screen):
+        pg.draw.rect(screen, "black", self.container_rect)
+        pg.draw.rect(screen, "white", self.button_rect, border_radius=6)
+
+    def move(self, mouse_pos):
+        x_loc  = ((mouse_pos[0] // 20) * 20)
+        self.button_rect.centerx =  x_loc + 1 if x_loc <= (self.slider_left ) else x_loc 
+        
+
+
+    def get_val(self) -> int:
+        length = self.slider_right - self.slider_left 
+        button_loc = self.button_rect.centerx - self.slider_left 
+        return math.ceil(button_loc / length * 15)
 
 
     
@@ -94,8 +134,8 @@ def grid(dimensions: int = 16):
     surf.fill(pg.Color(0,255,0), None)
     surf.set_colorkey((0,255,0))
     for x in range(1, dimensions):
-        pg.draw.line(surf, (153, 153, 153), (0, spriteMap.get_width()//dimensions * x), (spriteMap.get_height(),spriteMap.get_width()//dimensions * x), 2)
-        pg.draw.line(surf, (153, 153, 153), (spriteMap.get_height()//dimensions * x, 0), (spriteMap.get_height()//dimensions * x, spriteMap.get_height()), 2)
+        pg.draw.line(surf, (161, 161, 161), (0, spriteMap.get_width()//dimensions * x), (spriteMap.get_height(),spriteMap.get_width()//dimensions * x), 1)
+        pg.draw.line(surf,  (161, 161, 161), (spriteMap.get_height()//dimensions * x, 0), (spriteMap.get_height()//dimensions * x, spriteMap.get_height()), 1)
     return surf
 
 def blit_from_array(array: list):
@@ -109,20 +149,31 @@ def blit_from_array(array: list):
 
 def draw_canvas(canvas, x_loc, y_loc, color, dimensions = 16):
     pixel_length = 832 // dimensions
-    pg.draw.rect(canvas, color, ((x_loc -334) // pixel_length *  pixel_length ,  (y_loc //  pixel_length) * pixel_length, pixel_length, pixel_length), 0)
+    pg.draw.rect(canvas, color, ((x_loc -468) // pixel_length *  pixel_length ,  (y_loc //  pixel_length) * pixel_length, pixel_length, pixel_length), 0)
     return canvas
 
 def update_canvas_array(array: list, x_loc, y_loc, color, dimensions = 16):
     pixel_length = 832 // dimensions
     ret = array.copy()
-    ret[(x_loc - 334) // pixel_length + y_loc // pixel_length * dimensions] = color
+    ret[(x_loc - 468) // pixel_length + y_loc // pixel_length * dimensions] = color
     return ret
-    
 
     
+def draw_text(text, font, color, surface, x, y):
+    textobj = font.render(text, 1, color)
+    textrect = textobj.get_rect()
+    textrect.center = (x, y)
+    surface.blit(textobj, textrect)
 
 
-def run():
+
+
+
+def main():
+    brush_color = pg.Color(0, 0, 0)
+    brush_hexits = ["0", "0", "0"]
+
+
     overlay = grid()
     show_grid = True
     current_array = blank_canvas()
@@ -130,11 +181,21 @@ def run():
 
     undo_tree: linkedList = linkedList()
     undo_tree.insert(current_array)
-    temp = current_array.copy()
+    temp = current_array
+
+
+    R_slider: Slider = Slider((211, 720), (300, 6), 0, 15)
+    G_slider: Slider = Slider((211, 760), (300, 6), 0, 15)
+    B_slider: Slider = Slider((211, 800), (300, 6), 0, 15)
+
+    sliders = [R_slider, G_slider, B_slider]
 
     j = 0
     mouse_down = False
     while(True):
+        window.fill((80, 80, 80))
+
+        mouse_pos = pg.mouse.get_pos()
         
 
         for event in pg.event.get():
@@ -146,18 +207,22 @@ def run():
                     case pg.K_o:
                         show_grid = not show_grid
                     case pg.K_z:
-                        if pg.key.get_mods() and pg.KMOD_CTRL:
+                        if(pg.key.get_mods() and pg.KMOD_CTRL):
                             undo_tree.goBack()
                             stuff = undo_tree.getData()
                             spriteMap = blit_from_array(stuff)
                             temp = stuff
+                        
+
                     case pg.K_y:
                         if pg.key.get_mods() and pg.KMOD_CTRL:
                             undo_tree.goForward()
                             stuff = undo_tree.getData()
                             spriteMap = blit_from_array(stuff)
                             temp = stuff
-
+                    
+                
+                    
         if pg.mouse.get_pressed()[0]:
                 mouse_down = True
         else: 
@@ -169,21 +234,34 @@ def run():
         if(mouse_down):
             mouse_X = pg.mouse.get_pos()[0]
             mouse_Y = pg.mouse.get_pos()[1]
-            if( abs(mouse_X - 750) < 416 and abs(mouse_Y - 416) < 416):
-                spriteMap = draw_canvas(spriteMap, mouse_X, mouse_Y, pg.Color(255, 0, 0), 16)
-                temp = update_canvas_array(temp, mouse_X, mouse_Y, pg.Color(255, 0, 0))
-                    
-       
-        window.blit(spriteMap, (334,0))
-        if (show_grid):
-            window.blit(overlay, (334, 0))
-        pg.display.update()
-        clock.tick(60)
+            if( mouse_X > 468 and abs(mouse_Y - 416) < 416):
+                spriteMap = draw_canvas(spriteMap, mouse_X, mouse_Y, brush_color, 16)
+                temp = update_canvas_array(temp, mouse_X, mouse_Y, brush_color)
+        for slider in sliders:
+            if slider.container_rect.collidepoint(mouse_pos) and pg.mouse.get_pressed()[0]:
+                slider.move(mouse_pos)
+                brush_color = pg.Color((R_slider.get_val()<< 4) + R_slider.get_val(),(G_slider.get_val()<< 4) + G_slider.get_val(), (B_slider.get_val()<< 4) + B_slider.get_val() )
+                brush_hexits = [f'{R_slider.get_val():x}', f'{G_slider.get_val():x}', f'{B_slider.get_val():x}']
 
-def main():
-    window.fill((80, 80, 80))
-    run()
-   
+
+        draw_text('R', main_font, (255, 255, 255), window, 30, 725)
+        draw_text('G', main_font, (255, 255, 255), window, 30, 765)
+        draw_text('B', main_font, (255, 255, 255), window, 30, 805)
+        draw_text(brush_hexits[0], main_font, (255, 255, 255), window, 385, 725)
+        draw_text(brush_hexits[1], main_font, (255, 255, 255), window, 385, 765)
+        draw_text(brush_hexits[2], main_font, (255, 255, 255), window, 385, 805)
+        
+
+        window.blit(spriteMap, (468,0))
+        if (show_grid):
+            window.blit(overlay, (468, 0))
+        for slider in sliders:
+            slider.draw(window)
+      
+
+        pg.display.update()
+        clock.tick(120)
+
 
 
 if __name__ == "__main__":
