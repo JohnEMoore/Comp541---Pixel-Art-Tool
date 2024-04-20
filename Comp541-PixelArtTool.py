@@ -166,6 +166,13 @@ def draw_text(text, font, color, surface, x, y):
     surface.blit(textobj, textrect)
 
 
+def slider_text(brush_hexits, window):
+    draw_text('R', main_font, (255, 255, 255), window, 30, 725)
+    draw_text('G', main_font, (255, 255, 255), window, 30, 765)
+    draw_text('B', main_font, (255, 255, 255), window, 30, 805)
+    draw_text(brush_hexits[0], main_font, (255, 255, 255), window, 385, 725)
+    draw_text(brush_hexits[1], main_font, (255, 255, 255), window, 385, 765)
+    draw_text(brush_hexits[2], main_font, (255, 255, 255), window, 385, 805)
 
 
 
@@ -242,15 +249,10 @@ def main():
                 slider.move(mouse_pos)
                 brush_color = pg.Color((R_slider.get_val()<< 4) + R_slider.get_val(),(G_slider.get_val()<< 4) + G_slider.get_val(), (B_slider.get_val()<< 4) + B_slider.get_val() )
                 brush_hexits = [f'{R_slider.get_val():x}', f'{G_slider.get_val():x}', f'{B_slider.get_val():x}']
+        slider_text(brush_hexits, window)
 
-
-        draw_text('R', main_font, (255, 255, 255), window, 30, 725)
-        draw_text('G', main_font, (255, 255, 255), window, 30, 765)
-        draw_text('B', main_font, (255, 255, 255), window, 30, 805)
-        draw_text(brush_hexits[0], main_font, (255, 255, 255), window, 385, 725)
-        draw_text(brush_hexits[1], main_font, (255, 255, 255), window, 385, 765)
-        draw_text(brush_hexits[2], main_font, (255, 255, 255), window, 385, 805)
-        
+       
+        pg.draw.rect(window, brush_color, (60, 400, 300, 300))
 
         window.blit(spriteMap, (468,0))
         if (show_grid):
