@@ -1,6 +1,7 @@
 import pygame as pg
 import sys
 import math
+import pyperclip
 
 
 
@@ -174,6 +175,13 @@ def slider_text(brush_hexits, window):
     draw_text(brush_hexits[1], main_font, (255, 255, 255), window, 385, 765)
     draw_text(brush_hexits[2], main_font, (255, 255, 255), window, 385, 805)
 
+def exportData(array):
+    text = ""
+    for i in range(0, len(array)):
+        text += f'{array[i].r//17:x}' + f'{array[i].g//17:x}' + f'{array[i].b//17:x}'
+        text += "\n"
+    pyperclip.copy(text)
+
 
 
 def main():
@@ -227,6 +235,8 @@ def main():
                             stuff = undo_tree.getData()
                             spriteMap = blit_from_array(stuff)
                             temp = stuff
+                    case pg.K_c:
+                        exportData(undo_tree.getData()) 
                     
                 
                     
