@@ -111,7 +111,13 @@ class Slider:
         button_loc = self.button_rect.centerx - self.slider_left 
         return math.ceil(button_loc / length * 15)
 
+class Painter:
 
+    def __init__(self):
+        self.brush_color = pg.Color(0, 0, 0)
+        self.brush_hexits = ["0", "0", "0"]
+        self.brush_size = 1
+        self.tool_type = "brush"
     
 def blank_canvas(dimensions: int = 16):
     new_list = []
@@ -148,15 +154,21 @@ def blit_from_array(array: list):
         pg.draw.rect(surf, array[i], (((i%length) * pixel_length,  (i // length) * pixel_length), (pixel_length, pixel_length)), 0)
     return surf
 
-def draw_canvas(canvas, x_loc, y_loc, color, dimensions = 16):
+def draw_canvas(canvas, x_loc, y_loc, color, size, dimensions = 16):
     pixel_length = 832 // dimensions
-    pg.draw.rect(canvas, color, ((x_loc -468) // pixel_length *  pixel_length ,  (y_loc //  pixel_length) * pixel_length, pixel_length, pixel_length), 0)
+    for x in range (0, size):
+        for y in range(0, size):
+            pg.draw.rect(canvas, color, ((x_loc -468) // pixel_length *  pixel_length + x * pixel_length,  (y_loc //  pixel_length) * pixel_length, pixel_length, pixel_length + y * pixel_length), 0)
     return canvas
 
-def update_canvas_array(array: list, x_loc, y_loc, color, dimensions = 16):
+def update_canvas_array(array: list, x_loc, y_loc, color, size, dimensions = 16):
     pixel_length = 832 // dimensions
-    ret = array.copy()
-    ret[(x_loc - 468) // pixel_length + y_loc // pixel_length * dimensions] = color
+    ret = array
+    for x in range (0, size):
+        for y in range(0, size):
+            index = ((x_loc - 468) // pixel_length) + x + (y_loc // pixel_length * dimensions) + dimensions * y
+            if index < len(array):
+                ret[((x_loc - 468) // pixel_length) + x + (y_loc // pixel_length * dimensions) + dimensions * y] = color
     return ret
 
     
@@ -185,9 +197,8 @@ def exportData(array):
 
 
 def main():
-    brush_color = pg.Color(0, 0, 0)
-    brush_hexits = ["0", "0", "0"]
-
+    user: Painter = Painter()
+    
 
     overlay = grid()
     show_grid = True
@@ -198,11 +209,9 @@ def main():
     undo_tree.insert(current_array)
     temp = current_array
 
-
     R_slider: Slider = Slider((211, 720), (300, 6), 0, 15)
     G_slider: Slider = Slider((211, 760), (300, 6), 0, 15)
     B_slider: Slider = Slider((211, 800), (300, 6), 0, 15)
-
     sliders = [R_slider, G_slider, B_slider]
 
     j = 0
@@ -237,6 +246,14 @@ def main():
                             temp = stuff
                     case pg.K_c:
                         exportData(undo_tree.getData()) 
+                    case pg.K_1:
+                        user.brush_size = 1
+                    case pg.K_2:
+                        user.brush_size = 2
+                    case pg.K_3:
+                        user.brush_size = 3
+                    case pg.K_4:
+                        user.brush_size = 4
                     
                 
                     
@@ -252,17 +269,17 @@ def main():
             mouse_X = pg.mouse.get_pos()[0]
             mouse_Y = pg.mouse.get_pos()[1]
             if( mouse_X > 468 and abs(mouse_Y - 416) < 416):
-                spriteMap = draw_canvas(spriteMap, mouse_X, mouse_Y, brush_color, 16)
-                temp = update_canvas_array(temp, mouse_X, mouse_Y, brush_color)
+                spriteMap = draw_canvas(spriteMap, mouse_X, mouse_Y, user.brush_color, user.brush_size, 16)
+                temp = update_canvas_array(temp, mouse_X, mouse_Y, user.brush_color, user.brush_size)
         for slider in sliders:
             if slider.container_rect.collidepoint(mouse_pos) and pg.mouse.get_pressed()[0]:
                 slider.move(mouse_pos)
-                brush_color = pg.Color((R_slider.get_val()<< 4) + R_slider.get_val(),(G_slider.get_val()<< 4) + G_slider.get_val(), (B_slider.get_val()<< 4) + B_slider.get_val() )
-                brush_hexits = [f'{R_slider.get_val():x}', f'{G_slider.get_val():x}', f'{B_slider.get_val():x}']
-        slider_text(brush_hexits, window)
+                user.brush_color = pg.Color((R_slider.get_val()<< 4) + R_slider.get_val(),(G_slider.get_val()<< 4) + G_slider.get_val(), (B_slider.get_val()<< 4) + B_slider.get_val() )
+                user.brush_hexits = [f'{R_slider.get_val():x}', f'{G_slider.get_val():x}', f'{B_slider.get_val():x}']
+        slider_text(user.brush_hexits, window)
 
        
-        pg.draw.rect(window, brush_color, (60, 400, 300, 300))
+        pg.draw.rect(window, user.brush_color, (60, 400, 300, 300))
 
         window.blit(spriteMap, (468,0))
         if (show_grid):
