@@ -160,7 +160,7 @@ def grid(dimensions: int = 16):
         pg.draw.line(surf,  (161, 161, 161), (spriteMap.get_height()//dimensions * x, 0), (spriteMap.get_height()//dimensions * x, spriteMap.get_height()), 1)
     return surf
 
-def blit_from_array(array: list):
+def blit_from_array(array: list, dimensions=16):
     surf = pg.Surface((832, 832))
     length = round(math.sqrt(len(array)))
     pixel_length = 832 // length # calculate size of each pixel given number of pixels and the magic number for canvas size
@@ -213,21 +213,21 @@ def selectColor(array,  x_loc, y_loc, dimensions = 16):
     pixel_length = 832 // dimensions
     return array[((x_loc - 468) // pixel_length) + (y_loc // pixel_length * dimensions)]
 
-def fill(canvas, array, x_loc, y_loc, color, oldcolor, dimensions = 16):
+def fill(canvas, array, x_loc, y_loc, color, oldcolor, dimensions):
     if oldcolor == color:
         return array
     pixel_length = 832 // dimensions
     ret = array
-    draw_canvas(canvas, x_loc, y_loc, color, 1, dimensions = 16)
+    draw_canvas(canvas, x_loc, y_loc, color, 1, dimensions)
     index = ((x_loc - 468) // pixel_length) + (y_loc // pixel_length * dimensions)
     ret[index] = color
     if (index - dimensions >= 0 and ret[index - dimensions] == oldcolor):
         ret = fill(canvas, ret, x_loc , y_loc - pixel_length, color, oldcolor, dimensions)
     if (index + dimensions < len(array)  and ret[index + dimensions] == oldcolor):
         ret = fill(canvas, ret, x_loc, y_loc + pixel_length, color, oldcolor, dimensions)
-    if (index - 1 >= 0 and ret[index - 1] == oldcolor and index // 16 == (index - 1) // 16):
+    if (index - 1 >= 0 and ret[index - 1] == oldcolor and index // dimensions == (index - 1) // dimensions):
         ret = fill(canvas, ret, x_loc - pixel_length, y_loc, color, oldcolor, dimensions)
-    if (index + 1 < len(array) and ret[index + 1] == oldcolor and index // 16 == (index + 1) // 16):
+    if (index + 1 < len(array) and ret[index + 1] == oldcolor and index // dimensions == (index + 1) // dimensions):
         ret = fill(canvas, ret, x_loc + pixel_length, y_loc, color, oldcolor, dimensions)
     return ret
 
@@ -291,7 +291,7 @@ def main():
                         if pg.key.get_mods() and pg.KMOD_CTRL:
                             undo_tree.goForward()
                             stuff = undo_tree.getData()
-                            spriteMap = blit_from_array(stuff)
+                            spriteMap = blit_from_array(stuff, user.canvas_size)
                             temp = stuff
                     case pg.K_s:
                         user.tool_type = "selector"
@@ -323,7 +323,7 @@ def main():
                         mouse_down = True
                     case "selector":
                         if( mouse_X > 468 and abs(mouse_Y - 416) < 416):
-                            user.update_Color(selectColor(current_array, mouse_X, mouse_Y))
+                            user.update_Color(selectColor(current_array, mouse_X, mouse_Y, user.canvas_size))
                             R_slider.jump(user.brush_color.r)
                             G_slider.jump(user.brush_color.g)
                             B_slider.jump(user.brush_color.b)
@@ -341,20 +341,20 @@ def main():
             if( mouse_X > 468 and abs(mouse_Y - 416) < 416):
                 if user.tool_type == "brush":
                     draw_canvas(spriteMap, mouse_X, mouse_Y, user.brush_color, user.brush_size,  user.canvas_size)
-                    temp = update_canvas_array(temp, mouse_X, mouse_Y, user.brush_color, user.brush_size)
+                    temp = update_canvas_array(temp, mouse_X, mouse_Y, user.brush_color, user.brush_size, user.canvas_size)
                 if user.tool_type == "horz_mirror":
                     draw_canvas(spriteMap, mouse_X, mouse_Y, user.brush_color, user.brush_size,  user.canvas_size)
-                    temp = update_canvas_array(temp, mouse_X, mouse_Y, user.brush_color, user.brush_size)
+                    temp = update_canvas_array(temp, mouse_X, mouse_Y, user.brush_color, user.brush_size, user.canvas_size)
                     draw_canvas(spriteMap, mouse_X, abs(832 - mouse_Y), user.brush_color, user.brush_size,  user.canvas_size)
-                    temp = update_canvas_array(temp, mouse_X, abs(832- mouse_Y), user.brush_color, user.brush_size)
+                    temp = update_canvas_array(temp, mouse_X, abs(832- mouse_Y), user.brush_color, user.brush_size, user.canvas_size)
                 if user.tool_type == "vert_mirror":
                     draw_canvas(spriteMap, mouse_X, mouse_Y, user.brush_color, user.brush_size,  user.canvas_size)
-                    temp = update_canvas_array(temp, mouse_X, mouse_Y, user.brush_color, user.brush_size)
+                    temp = update_canvas_array(temp, mouse_X, mouse_Y, user.brush_color, user.brush_size, user.canvas_size)
                     draw_canvas(spriteMap,  abs(832 - mouse_X + 468) + 468, mouse_Y, user.brush_color, user.brush_size, user.canvas_size)
-                    temp = update_canvas_array(temp, abs(832 - mouse_X + 468) + 468, mouse_Y, user.brush_color, user.brush_size)
+                    temp = update_canvas_array(temp, abs(832 - mouse_X + 468) + 468, mouse_Y, user.brush_color, user.brush_size, user.canvas_size)
                 if user.tool_type == "fill":
                         if( mouse_X > 468 and abs(mouse_Y - 416) < 416):
-                            temp = fill(spriteMap, temp.copy(), mouse_X, mouse_Y, user.brush_color, selectColor(current_array, mouse_X, mouse_Y))
+                            temp = fill(spriteMap, temp.copy(), mouse_X, mouse_Y, user.brush_color, selectColor(current_array, mouse_X, mouse_Y, user.canvas_size), user.canvas_size)
                             
                        
         for slider in sliders:
@@ -372,7 +372,7 @@ def main():
                     user.canvas_size = new_size
                     overlay = grid(new_size)
                     current_array = blank_canvas(new_size)
-                    spriteMap = blit_from_array(current_array)
+                    spriteMap = blit_from_array(current_array, new_size)
 
                     undo_tree: linkedList = linkedList()
                     undo_tree.insert(current_array)
