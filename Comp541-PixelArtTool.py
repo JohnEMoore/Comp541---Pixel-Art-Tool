@@ -169,21 +169,22 @@ def blit_from_array(array: list, dimensions=16):
         pg.draw.rect(surf, array[i], (((i%length) * pixel_length,  (i // length) * pixel_length), (pixel_length, pixel_length)), 0)
     return surf
 
-def draw_canvas(canvas, x_loc, y_loc, color, size, dimensions = 16):
+def draw_canvas(canvas, x_loc, y_loc, color, size, dimensions = 16, mirrorV = False, mirrorH = False):
     pixel_length = 832 // dimensions
     for x in range (0, size):
         for y in range(0, size):
-            pg.draw.rect(canvas, color, ((x_loc -468) // pixel_length *  pixel_length + x * pixel_length,  (y_loc //  pixel_length) * pixel_length, pixel_length, pixel_length + y * pixel_length), 0)
+            pg.draw.rect(canvas, color, ((x_loc -468) // pixel_length *  pixel_length + x * pixel_length * (-1 if mirrorV else 1) ,  (y_loc //  pixel_length) * pixel_length  + y * pixel_length * (-1 if mirrorH else 1), pixel_length, pixel_length), 0)
     return canvas
 
-def update_canvas_array(array: list, x_loc, y_loc, color, size, dimensions = 16):
+def update_canvas_array(array: list, x_loc, y_loc, color, size, dimensions = 16, mirrorV = False, mirrorH = False):
     pixel_length = 832 // dimensions
     ret = array
+
     for x in range (0, size):
         for y in range(0, size):
-            index = ((x_loc - 468) // pixel_length) + x + (y_loc // pixel_length * dimensions) + dimensions * y
+            index = ((x_loc - 468) // pixel_length) + x * (-1 if mirrorV else 1) + (y_loc // pixel_length * dimensions) + dimensions * y * (-1 if mirrorH else 1) 
             if index < len(array):
-                ret[((x_loc - 468) // pixel_length) + x + (y_loc // pixel_length * dimensions) + dimensions * y] = color
+                ret[index] = color
     return ret
 
     
@@ -345,13 +346,13 @@ def main():
                 if user.tool_type == "horz_mirror":
                     draw_canvas(spriteMap, mouse_X, mouse_Y, user.brush_color, user.brush_size,  user.canvas_size)
                     temp = update_canvas_array(temp, mouse_X, mouse_Y, user.brush_color, user.brush_size, user.canvas_size)
-                    draw_canvas(spriteMap, mouse_X, abs(832 - mouse_Y), user.brush_color, user.brush_size,  user.canvas_size)
-                    temp = update_canvas_array(temp, mouse_X, abs(832- mouse_Y), user.brush_color, user.brush_size, user.canvas_size)
+                    draw_canvas(spriteMap, mouse_X, abs(832 - mouse_Y), user.brush_color, user.brush_size,  user.canvas_size, mirrorH=True)
+                    temp = update_canvas_array(temp, mouse_X, abs(832- mouse_Y), user.brush_color, user.brush_size, user.canvas_size, mirrorH=True)
                 if user.tool_type == "vert_mirror":
                     draw_canvas(spriteMap, mouse_X, mouse_Y, user.brush_color, user.brush_size,  user.canvas_size)
                     temp = update_canvas_array(temp, mouse_X, mouse_Y, user.brush_color, user.brush_size, user.canvas_size)
-                    draw_canvas(spriteMap,  abs(832 - mouse_X + 468) + 468, mouse_Y, user.brush_color, user.brush_size, user.canvas_size)
-                    temp = update_canvas_array(temp, abs(832 - mouse_X + 468) + 468, mouse_Y, user.brush_color, user.brush_size, user.canvas_size)
+                    draw_canvas(spriteMap,  abs(832 - mouse_X + 468) + 468, mouse_Y, user.brush_color, user.brush_size, user.canvas_size, mirrorV=True)
+                    temp = update_canvas_array(temp, abs(832 - mouse_X + 468) + 468, mouse_Y, user.brush_color, user.brush_size, user.canvas_size, mirrorV=True)
                 if user.tool_type == "fill":
                         if( mouse_X > 468 and abs(mouse_Y - 416) < 416):
                             temp = fill(spriteMap, temp.copy(), mouse_X, mouse_Y, user.brush_color, selectColor(current_array, mouse_X, mouse_Y, user.canvas_size), user.canvas_size)
