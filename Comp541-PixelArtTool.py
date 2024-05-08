@@ -378,10 +378,11 @@ def main():
                     undo_tree: linkedList = linkedList()
                     undo_tree.insert(current_array)
                     temp = current_array
-                    
+        draw_text('8', main_font, (0,0,0), window,110, 150)
+        draw_text('16', main_font,(0,0,0), window, 230, 150)
+        draw_text('32', main_font, (0,0,0), window, 350, 150)            
                 
-
-       
+        
         pg.draw.rect(window, user.brush_color, (60, 400, 300, 300))
 
         window.blit(spriteMap, (468,0))
