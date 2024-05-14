@@ -2,11 +2,11 @@
 
 12 bit color pixel art tool that allows for exporting the RGB code to your clipboard.
 
-#Features
+# Features
 
 Can select canvas sizes at 8x8, 16x16, and 32x32 and color the pixel canvas with 12 bit colors. Can use sliders to select colors, which is shown in the preview swatch. There are 4 swatches in your palette and you can swap between which color is active.
 
-#Bindings
+# Bindings
 
 Brush (B): Change covered pixel(s) to selected color
 Vertical Mirror (V): Brush tool that automatically colors the selected pixel(s) and the pixel(s) at the location reflected across the vertical axis
