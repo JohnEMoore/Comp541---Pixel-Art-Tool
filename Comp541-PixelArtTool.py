@@ -115,22 +115,77 @@ class Slider:
     def jump(self, val):
         self.button_rect.centerx = (val // 17) * self.size[0]//15   + self.slider_left
 
+
+R_slider: Slider = Slider((211, 720), (300, 6), 0, 15)
+G_slider: Slider = Slider((211, 760), (300, 6), 0, 15)
+B_slider: Slider = Slider((211, 800), (300, 6), 0, 15)
+sliders = [R_slider, G_slider, B_slider]
+
 class Painter:
 
     def __init__(self):
-        self.brush_color = pg.Color(0, 0, 0)
+        self.brush_color1 = pg.Color(0, 0, 0)
+        self.brush_color2 = pg.Color(255, 0, 0)
+        self.brush_color3 = pg.Color(0, 255, 0)
+        self.brush_color4 = pg.Color(0, 0, 255)
+        self.active_brush = 1
         self.brush_hexits = ["0", "0", "0"]
         self.brush_size = 1
         self.canvas_size = 16
         self.tool_type = "brush"
 
     def update_Color(self, color: pg.Color):
-        self.brush_color = color
-        self.brush_hexits
+        match self.active_brush:
+            case 1:
+                self.brush_color1 = color
+            case 2:
+                self.brush_color2 = color
+            case 3:
+                self.brush_color3 = color
+            case 4:
+                self.brush_color4 = color
         self.brush_hexits = [f'{color.r//17:x}', f'{color.g//17:x}', f'{color.b//17:x}']
 
     def update_canvas_size(self, size):
         self.canvas_size = size
+
+    def active_color(self):
+        match self.active_brush:
+            case 1:
+                return self.brush_color1
+            case 2:
+                return self.brush_color2
+            case 3:
+                return self.brush_color3
+            case 4:
+                return self.brush_color4
+            
+            
+    def swap_color(self, dir):
+        self.active_brush += dir
+        if self.active_brush > 4:
+            self.active_brush = 1
+        if self.active_brush < 1:
+            self.active_brush = 4
+        color = self.active_color()
+        self.brush_hexits = [f'{color.r//17:x}', f'{color.g//17:x}', f'{color.b//17:x}']
+        R_slider.jump(self.active_color().r)
+        G_slider.jump(self.active_color().g)
+        B_slider.jump(self.active_color().b)
+
+    def color_select(self):
+        match self.active_brush:
+            case 1:
+                return (60, 400, 150, 150)
+            case 2:
+                return (210, 400, 150, 150)
+            case 3:
+                return (60, 550, 150, 150)
+            case 4:
+                return (210, 550, 150, 150)
+        
+        
+
     
 def blank_canvas(dimensions: int = 16):
     new_list = []
@@ -254,10 +309,7 @@ def main():
     undo_tree.insert(current_array)
     temp = current_array
 
-    R_slider: Slider = Slider((211, 720), (300, 6), 0, 15)
-    G_slider: Slider = Slider((211, 760), (300, 6), 0, 15)
-    B_slider: Slider = Slider((211, 800), (300, 6), 0, 15)
-    sliders = [R_slider, G_slider, B_slider]
+   
 
     button_8: Button = Button(110, 150, 90, 90, 8)
     button_16: Button = Button(230, 150, 90, 90, 16)
@@ -314,6 +366,10 @@ def main():
                         user.tool_type = "horz_mirror"
                     case pg.K_f:
                         user.tool_type = "fill"
+                    case pg.K_e:
+                        user.swap_color(1)
+                    case pg.K_q:
+                        user.swap_color(-1)
                     
                 
         mouse_X = pg.mouse.get_pos()[0]
@@ -325,9 +381,9 @@ def main():
                     case "selector":
                         if( mouse_X > 468 and abs(mouse_Y - 416) < 416):
                             user.update_Color(selectColor(current_array, mouse_X, mouse_Y, user.canvas_size))
-                            R_slider.jump(user.brush_color.r)
-                            G_slider.jump(user.brush_color.g)
-                            B_slider.jump(user.brush_color.b)
+                            R_slider.jump(user.active_color().r)
+                            G_slider.jump(user.active_color().g)
+                            B_slider.jump(user.active_color().b)
                     
                             
 
@@ -341,21 +397,21 @@ def main():
             
             if( mouse_X > 468 and abs(mouse_Y - 416) < 416):
                 if user.tool_type == "brush":
-                    draw_canvas(spriteMap, mouse_X, mouse_Y, user.brush_color, user.brush_size,  user.canvas_size)
-                    temp = update_canvas_array(temp, mouse_X, mouse_Y, user.brush_color, user.brush_size, user.canvas_size)
+                    draw_canvas(spriteMap, mouse_X, mouse_Y, user.active_color(), user.brush_size,  user.canvas_size)
+                    temp = update_canvas_array(temp, mouse_X, mouse_Y, user.active_color(), user.brush_size, user.canvas_size)
                 if user.tool_type == "horz_mirror":
-                    draw_canvas(spriteMap, mouse_X, mouse_Y, user.brush_color, user.brush_size,  user.canvas_size)
-                    temp = update_canvas_array(temp, mouse_X, mouse_Y, user.brush_color, user.brush_size, user.canvas_size)
-                    draw_canvas(spriteMap, mouse_X, abs(832 - mouse_Y), user.brush_color, user.brush_size,  user.canvas_size, mirrorH=True)
-                    temp = update_canvas_array(temp, mouse_X, abs(832- mouse_Y), user.brush_color, user.brush_size, user.canvas_size, mirrorH=True)
+                    draw_canvas(spriteMap, mouse_X, mouse_Y, user.active_color(), user.brush_size,  user.canvas_size)
+                    temp = update_canvas_array(temp, mouse_X, mouse_Y, user.active_color(), user.brush_size, user.canvas_size)
+                    draw_canvas(spriteMap, mouse_X, abs(832 - mouse_Y), user.active_color(), user.brush_size,  user.canvas_size, mirrorH=True)
+                    temp = update_canvas_array(temp, mouse_X, abs(832- mouse_Y), user.active_color(), user.brush_size, user.canvas_size, mirrorH=True)
                 if user.tool_type == "vert_mirror":
-                    draw_canvas(spriteMap, mouse_X, mouse_Y, user.brush_color, user.brush_size,  user.canvas_size)
-                    temp = update_canvas_array(temp, mouse_X, mouse_Y, user.brush_color, user.brush_size, user.canvas_size)
-                    draw_canvas(spriteMap,  abs(832 - mouse_X + 468) + 468, mouse_Y, user.brush_color, user.brush_size, user.canvas_size, mirrorV=True)
-                    temp = update_canvas_array(temp, abs(832 - mouse_X + 468) + 468, mouse_Y, user.brush_color, user.brush_size, user.canvas_size, mirrorV=True)
+                    draw_canvas(spriteMap, mouse_X, mouse_Y, user.active_color(), user.brush_size,  user.canvas_size)
+                    temp = update_canvas_array(temp, mouse_X, mouse_Y, user.active_color(), user.brush_size, user.canvas_size)
+                    draw_canvas(spriteMap,  abs(832 - mouse_X + 468) + 468, mouse_Y, user.active_color(), user.brush_size, user.canvas_size, mirrorV=True)
+                    temp = update_canvas_array(temp, abs(832 - mouse_X + 468) + 468, mouse_Y, user.active_color(), user.brush_size, user.canvas_size, mirrorV=True)
                 if user.tool_type == "fill":
                         if( mouse_X > 468 and abs(mouse_Y - 416) < 416):
-                            temp = fill(spriteMap, temp.copy(), mouse_X, mouse_Y, user.brush_color, selectColor(current_array, mouse_X, mouse_Y, user.canvas_size), user.canvas_size)
+                            temp = fill(spriteMap, temp.copy(), mouse_X, mouse_Y, user.active_color(), selectColor(current_array, mouse_X, mouse_Y, user.canvas_size), user.canvas_size)
                             
                        
         for slider in sliders:
@@ -383,8 +439,11 @@ def main():
         draw_text('32', main_font, (0,0,0), window, 350, 150)            
                 
         
-        pg.draw.rect(window, user.brush_color, (60, 400, 300, 300))
-
+        pg.draw.rect(window, user.brush_color1, (60, 400, 150, 150))
+        pg.draw.rect(window, user.brush_color2, (210, 400, 150, 150))
+        pg.draw.rect(window, user.brush_color3, (60, 550, 150, 150))
+        pg.draw.rect(window, user.brush_color4, (210, 550, 150, 150))
+        pg.draw.rect(window, (161, 161, 161), user.color_select(), width=3)
         window.blit(spriteMap, (468,0))
         if (show_grid):
             window.blit(overlay, (468, 0))

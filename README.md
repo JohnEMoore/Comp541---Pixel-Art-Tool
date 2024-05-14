@@ -4,7 +4,7 @@
 
 #Features
 
-Can select canvas sizes at 8x8, 16x16, and 32x32 and color the pixel canvas with 12 bit colors. Can use sliders to select colors, which is shown in the preview swatch.
+Can select canvas sizes at 8x8, 16x16, and 32x32 and color the pixel canvas with 12 bit colors. Can use sliders to select colors, which is shown in the preview swatch. There are 4 swatches in your palette and you can swap between which color is active.
 
 #Bindings
 
@@ -17,3 +17,5 @@ Select (S): Take the color from the pixel you click and use it as your selected 
 Undo (Z): Undo last change
 Redo (Y): Redo last change
 Copy to clipboard (C): Copy array of 12bit, newline separated hex codes from your canvas into your clipboard
+Palette Forward (Q): move to the next color in your palette
+Palette Backward (E): move to the previous color in your palette
