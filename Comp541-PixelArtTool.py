@@ -133,8 +133,9 @@ class Painter:
         self.brush_size = 1
         self.canvas_size = 16
         self.tool_type = "brush"
+    
 
-    def update_Color(self, color: pg.Color):
+    def update_Color(self, color):
         match self.active_brush:
             case 1:
                 self.brush_color1 = color
@@ -144,6 +145,8 @@ class Painter:
                 self.brush_color3 = color
             case 4:
                 self.brush_color4 = color
+            case _:
+                print("failed switch statement")
         self.brush_hexits = [f'{color.r//17:x}', f'{color.g//17:x}', f'{color.b//17:x}']
 
     def update_canvas_size(self, size):
@@ -288,8 +291,9 @@ def fill(canvas, array, x_loc, y_loc, color, oldcolor, dimensions):
     return ret
 
 class Button:
-    def __init__(self, x, y, width, height, val):
+    def __init__(self, x, y, width, height, val, type = "size"):
         self.rect = pg.Rect(x- width/2, y - height/2, width, height)
+        self.type = type
         self.val = val
     
     def draw(self, screen):
@@ -314,8 +318,13 @@ def main():
     button_8: Button = Button(110, 150, 90, 90, 8)
     button_16: Button = Button(230, 150, 90, 90, 16)
     button_32: Button = Button(350, 150, 90, 90, 32)
+    
+    button_swatch_1 = Button(135, 475, 150, 150, 1, "swatch")
+    button_swatch_2 = Button(285, 475, 150, 150, 2, "swatch")
+    button_swatch_3 = Button(135, 625, 150, 150, 3, "swatch")
+    button_swatch_4 = Button(285, 625, 150, 150, 4, "swatch")
 
-    buttons = [button_8 , button_16, button_32]
+    buttons = [button_8 , button_16, button_32, button_swatch_1, button_swatch_2, button_swatch_3,button_swatch_4]
 
     mouse_down = False
     while(True):
@@ -424,16 +433,22 @@ def main():
         for button in buttons:
             button.draw(window)
             if button.rect.collidepoint(mouse_pos) and pg.mouse.get_pressed()[0]:
-                new_size = button.val
-                if new_size != user.canvas_size:
-                    user.canvas_size = new_size
-                    overlay = grid(new_size)
-                    current_array = blank_canvas(new_size)
-                    spriteMap = blit_from_array(current_array, new_size)
+                #add logic for types of buttons
+                if button.type == "size":
+                    new_size = button.val
+                    if new_size != user.canvas_size:
+                        user.canvas_size = new_size
+                        overlay = grid(new_size)
+                        current_array = blank_canvas(new_size)
+                        spriteMap = blit_from_array(current_array, new_size)
 
-                    undo_tree: linkedList = linkedList()
-                    undo_tree.insert(current_array)
-                    temp = current_array
+                        undo_tree: linkedList = linkedList()
+                        undo_tree.insert(current_array)
+                        temp = current_array
+                if button.type == "swatch":
+                    user.swap_color(button.val - user.active_brush)
+                    
+                    
         draw_text('8', main_font, (0,0,0), window,110, 150)
         draw_text('16', main_font,(0,0,0), window, 230, 150)
         draw_text('32', main_font, (0,0,0), window, 350, 150)            
