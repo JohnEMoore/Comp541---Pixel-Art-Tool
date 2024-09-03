@@ -323,8 +323,17 @@ def main():
     button_swatch_2 = Button(285, 475, 150, 150, 2, "swatch")
     button_swatch_3 = Button(135, 625, 150, 150, 3, "swatch")
     button_swatch_4 = Button(285, 625, 150, 150, 4, "swatch")
+    
+    button_tool_brush = Button(120, 250, 80, 80, "brush", "tool")
+    button_tool_horz = Button(220, 250, 80, 80, "horz_mirror", "tool")
+    button_tool_vert = Button(320, 250, 80, 80, "vert_mirror", "tool")
 
-    buttons = [button_8 , button_16, button_32, button_swatch_1, button_swatch_2, button_swatch_3,button_swatch_4]
+    button_tool_fill = Button(120, 350, 80, 80, "fill", "tool")
+    button_tool_select = Button(220, 350, 80, 80, "selector", "tool")
+    #button_tool_copy = Button(320, 350, 80, 80, exportData(undo_tree.getData()) , "function")
+
+
+    buttons = [button_8 , button_16, button_32, button_swatch_1, button_swatch_2, button_swatch_3,button_swatch_4, button_tool_brush, button_tool_horz, button_tool_vert, button_tool_fill, button_tool_select]
 
     mouse_down = False
     while(True):
@@ -433,7 +442,6 @@ def main():
         for button in buttons:
             button.draw(window)
             if button.rect.collidepoint(mouse_pos) and pg.mouse.get_pressed()[0]:
-                #add logic for types of buttons
                 if button.type == "size":
                     new_size = button.val
                     if new_size != user.canvas_size:
@@ -447,12 +455,27 @@ def main():
                         temp = current_array
                 if button.type == "swatch":
                     user.swap_color(button.val - user.active_brush)
+                if button.type == "tool":
+                    user.tool_type = button.val
+                if button.type == "function":
+                    pass
                     
                     
         draw_text('8', main_font, (0,0,0), window,110, 150)
         draw_text('16', main_font,(0,0,0), window, 230, 150)
-        draw_text('32', main_font, (0,0,0), window, 350, 150)            
-                
+        draw_text('32', main_font, (0,0,0), window, 350, 150)     
+
+
+        draw_text('brush', main_font, (0,0,0), window, 120, 250)   
+        draw_text('h-mirror', main_font, (0,0,0), window, 220, 250)   
+        draw_text('v-mirror', main_font, (0,0,0), window, 320, 250)   
+        draw_text('fill', main_font, (0,0,0), window, 120, 350)   
+        draw_text('select', main_font, (0,0,0), window, 220, 350)   
+        #draw_text('copy', main_font, (0,0,0), window, 320, 350)   
+
+
+ 
+                    
         
         pg.draw.rect(window, user.brush_color1, (60, 400, 150, 150))
         pg.draw.rect(window, user.brush_color2, (210, 400, 150, 150))
