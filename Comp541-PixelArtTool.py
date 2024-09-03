@@ -291,7 +291,7 @@ def fill(canvas, array, x_loc, y_loc, color, oldcolor, dimensions):
     return ret
 
 class Button:
-    def __init__(self, x, y, width, height, val, type = "size"):
+    def __init__(self, x, y, width, height, val, type = "size", arg = None):
         self.rect = pg.Rect(x- width/2, y - height/2, width, height)
         self.type = type
         self.val = val
@@ -330,10 +330,10 @@ def main():
 
     button_tool_fill = Button(120, 350, 80, 80, "fill", "tool")
     button_tool_select = Button(220, 350, 80, 80, "selector", "tool")
-    #button_tool_copy = Button(320, 350, 80, 80, exportData(undo_tree.getData()) , "function")
+    button_tool_copy = Button(320, 350, 80, 80, exportData, "function", undo_tree.getData())
 
 
-    buttons = [button_8 , button_16, button_32, button_swatch_1, button_swatch_2, button_swatch_3,button_swatch_4, button_tool_brush, button_tool_horz, button_tool_vert, button_tool_fill, button_tool_select]
+    buttons = [button_8 , button_16, button_32, button_swatch_1, button_swatch_2, button_swatch_3,button_swatch_4, button_tool_brush, button_tool_horz, button_tool_vert, button_tool_fill, button_tool_select, button_tool_copy]
 
     mouse_down = False
     while(True):
@@ -458,7 +458,7 @@ def main():
                 if button.type == "tool":
                     user.tool_type = button.val
                 if button.type == "function":
-                    pass
+                    button.val(undo_tree.getData())
                     
                     
         draw_text('8', main_font, (0,0,0), window,110, 150)
@@ -471,7 +471,7 @@ def main():
         draw_text('v-mirror', main_font, (0,0,0), window, 320, 250)   
         draw_text('fill', main_font, (0,0,0), window, 120, 350)   
         draw_text('select', main_font, (0,0,0), window, 220, 350)   
-        #draw_text('copy', main_font, (0,0,0), window, 320, 350)   
+        draw_text('copy', main_font, (0,0,0), window, 320, 350)   
 
 
  
